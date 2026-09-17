@@ -263,6 +263,9 @@
     <div class="field"><label for="apiUrlInput">URL de la aplicación web</label>
       <input type="url" id="apiUrlInput" placeholder="https://script.google.com/macros/s/AKfycb.../exec">
     </div>
+    <div class="field"><label for="tokenInput">Palabra secreta (opcional)</label>
+      <input type="text" id="tokenInput" placeholder="Solo si activaste SHARED_TOKEN en Code.gs">
+    </div>
     <div class="dlg-actions">
       <button type="button" class="ghost" id="dlgCancel">Cancelar</button>
       <button type="button" class="primary" id="dlgSave">Guardar</button>
@@ -280,10 +283,12 @@
   var BRANDS = ["Auteco","Kymco","Victory","Trakku"];
   var MIN_SAMPLE = 3;
   var STORAGE_KEY = "radarHooksApiUrl";
+  var TOKEN_KEY = "radarHooksToken";
   var POLL_MS = 30000;
 
   var posts = [];
   var apiUrl = null;
+  var apiToken = null;
   var pollTimer = null;
 
   function css(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
@@ -303,6 +308,16 @@
   }
   function setStoredUrl(v){
     try { localStorage.setItem(STORAGE_KEY, v); } catch(e){ /* private mode etc. */ }
+  }
+  function getStoredToken(){
+    try { return localStorage.getItem(TOKEN_KEY) || ""; } catch(e){ return ""; }
+  }
+  function setStoredToken(v){
+    try { localStorage.setItem(TOKEN_KEY, v); } catch(e){ /* private mode etc. */ }
+  }
+  function withToken(url){
+    if (!apiToken) return url;
+    return url + (url.indexOf("?") === -1 ? "?" : "&") + "token=" + encodeURIComponent(apiToken);
   }
 
   // ---------- rendering (unchanged data-viz logic) ----------
@@ -554,7 +569,7 @@
       return;
     }
     try {
-      var res = await fetch(apiUrl, { method:"GET" });
+      var res = await fetch(withToken(apiUrl), { method:"GET" });
       var json = await res.json();
       if (!json.ok) throw new Error(json.error || "respuesta invalida");
       posts = (json.data || []).map(function(row){
@@ -591,7 +606,7 @@
     try {
       await fetch(apiUrl, {
         method:"POST",
-        body: JSON.stringify({ _action:"delete", createdAt: createdAt })
+        body: JSON.stringify({ _action:"delete", createdAt: createdAt, _token: apiToken || undefined })
       });
       await loadPosts();
     } catch (err) {
@@ -630,7 +645,8 @@
       vistas: vistasVal === "" ? "" : parseInt(vistasVal,10),
       comentarios: comentariosVal === "" ? "" : parseInt(comentariosVal,10),
       gate: document.getElementById("fGate").value,
-      nota: document.getElementById("fNota").value || ""
+      nota: document.getElementById("fNota").value || "",
+      _token: apiToken || undefined
     };
     var btn = document.getElementById("submitBtn");
     btn.disabled = true;
@@ -655,13 +671,17 @@
   var dlg = document.getElementById("settingsDialog");
   document.getElementById("settingsBtn").addEventListener("click", function(){
     document.getElementById("apiUrlInput").value = apiUrl || "";
+    document.getElementById("tokenInput").value = apiToken || "";
     dlg.showModal();
   });
   document.getElementById("dlgCancel").addEventListener("click", function(){ dlg.close(); });
   document.getElementById("dlgSave").addEventListener("click", function(){
     var v = document.getElementById("apiUrlInput").value.trim();
+    var t = document.getElementById("tokenInput").value.trim();
     setStoredUrl(v);
+    setStoredToken(t);
     apiUrl = v || null;
+    apiToken = t || null;
     dlg.close();
     loadPosts();
     schedulePoll();
@@ -669,6 +689,7 @@
 
   document.getElementById("fFecha").valueAsDate = new Date();
   apiUrl = getStoredUrl() || null;
+  apiToken = getStoredToken() || null;
   renderAll();
   loadPosts();
   schedulePoll();

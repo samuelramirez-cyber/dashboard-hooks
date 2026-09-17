@@ -33,13 +33,19 @@ var SPREADSHEET_ID = "";
 
 var SHEET_NAME = "Posts";
 
-// Opcional: si quieres una proteccion basica contra escrituras de gente que
-// no conoces, pon aqui una palabra secreta y agrega el mismo valor como
-// parametro "_token" en el fetch() de index.html. Vacio = sin proteccion.
+// Opcional: proteccion basica contra quien solo tenga esta URL suelta
+// (no contra alguien que abra la pagina del dashboard e inspeccione su
+// codigo - eso no se puede ocultar en una pagina estatica).
+// Pon aqui una palabra secreta SOLO en tu copia desplegada (nunca la subas
+// a un repo publico) y pega la misma palabra en el panel ⚙ de la pagina.
+// Vacio = sin proteccion.
 var SHARED_TOKEN = "";
 
 function doGet(e) {
   try {
+    if (SHARED_TOKEN && (!e.parameter || e.parameter.token !== SHARED_TOKEN)) {
+      return _json({ ok: false, error: "unauthorized" });
+    }
     var sheet = _sheet();
     var values = sheet.getDataRange().getValues();
     var headers = values.shift();
