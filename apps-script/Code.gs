@@ -2,19 +2,34 @@
  * Radar de Hooks — puente entre el Google Sheet "Posts" y la pagina web
  * publicada en GitHub Pages.
  *
- * Instalacion:
+ * Instalacion (si tu cuenta SI tiene el menu Extensiones en Sheets):
  *  1. Abre tu Google Sheet (importado de Radar_de_Hooks_Datos.xlsx).
  *  2. Extensiones -> Apps Script.
  *  3. Borra el contenido de ejemplo y pega TODO este archivo.
- *  4. Guarda (Ctrl+S). Dale un nombre al proyecto, ej. "Radar de Hooks API".
- *  5. Implementar -> Nueva implementacion -> tipo "Aplicacion web".
+ *  4. Deja SPREADSHEET_ID vacio ("") - un script vinculado desde Extensiones
+ *     ya sabe cual es su hoja.
+ *  5. Continua en el paso 6 de abajo.
+ *
+ * Instalacion (si tu cuenta NO tiene el menu Extensiones - ej. Workspace
+ * con Apps Script restringido, pero script.google.com si funciona):
+ *  1. Ve a script.google.com -> Proyecto nuevo.
+ *  2. Borra el contenido de ejemplo y pega TODO este archivo.
+ *  3. Copia el ID de tu Sheet: en la URL, la parte entre "/d/" y "/edit"
+ *     (https://docs.google.com/spreadsheets/d/ESTE_ES_EL_ID/edit).
+ *  4. Pegalo abajo en SPREADSHEET_ID, entre comillas.
+ *  5. Guarda (Ctrl+S). Dale un nombre al proyecto, ej. "Radar de Hooks API".
+ *  6. Implementar -> Nueva implementacion -> tipo "Aplicacion web".
  *       - Ejecutar como: Yo
  *       - Quien tiene acceso: Cualquier usuario
- *  6. Autoriza el acceso (te va a avisar que es una app no verificada -
+ *  7. Autoriza el acceso (te va a avisar que es una app no verificada -
  *     es tu propio script, dale "Avanzado" -> "Ir a [proyecto] (no seguro)" -> Permitir).
- *  7. Copia la URL que termina en /exec y pegala en el boton de configuracion (⚙)
+ *  8. Copia la URL que termina en /exec y pegala en el boton de configuracion (⚙)
  *     de la pagina web.
  */
+
+// Pega aqui el ID de tu Google Sheet (entre "/d/" y "/edit" en la URL).
+// Dejalo vacio SOLO si este script quedo vinculado vía Extensiones -> Apps Script.
+var SPREADSHEET_ID = "";
 
 var SHEET_NAME = "Posts";
 
@@ -65,7 +80,10 @@ function doPost(e) {
 }
 
 function _sheet() {
-  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  var ss = SPREADSHEET_ID
+    ? SpreadsheetApp.openById(SPREADSHEET_ID)
+    : SpreadsheetApp.getActiveSpreadsheet();
+  return ss.getSheetByName(SHEET_NAME);
 }
 
 function _checkToken(body) {

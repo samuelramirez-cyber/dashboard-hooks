@@ -13,15 +13,27 @@ Importa `Radar_de_Hooks_Datos.xlsx` (Archivo → Importar, o súbelo a Drive y �
 
 ### 2. Conecta el Apps Script
 
+Algunas cuentas de Google Workspace ocultan el menú **Extensiones** en Sheets (política del administrador). Usa la ruta que te funcione:
+
+**Si tienes el menú Extensiones:**
 1. En el Sheet: **Extensiones → Apps Script**.
 2. Borra el contenido de ejemplo y pega todo el contenido de [`apps-script/Code.gs`](apps-script/Code.gs).
-3. Guarda el proyecto (dale un nombre, ej. "Radar de Hooks API").
-4. **Implementar → Nueva implementación**:
+3. Deja `SPREADSHEET_ID = ""` tal cual — un script vinculado desde Extensiones ya sabe cuál es su hoja.
+
+**Si NO tienes el menú Extensiones (pero script.google.com sí te deja crear proyectos):**
+1. Ve a **script.google.com → Proyecto nuevo**.
+2. Borra el contenido de ejemplo y pega todo el contenido de [`apps-script/Code.gs`](apps-script/Code.gs).
+3. Copia el ID de tu Sheet (la parte de la URL entre `/d/` y `/edit`) y pégalo en `SPREADSHEET_ID`.
+
+Luego, en ambos casos:
+
+4. Guarda el proyecto (dale un nombre, ej. "Radar de Hooks API").
+5. **Implementar → Nueva implementación**:
    - Tipo: **Aplicación web**
    - Ejecutar como: **Yo**
    - Quién tiene acceso: **Cualquier usuario**
-5. Autoriza el acceso (Google va a advertir que es una app no verificada — es tu propio script: **Avanzado → Ir a [proyecto] (no seguro) → Permitir**).
-6. Copia la URL que termina en `/exec`.
+6. Autoriza el acceso (Google va a advertir que es una app no verificada — es tu propio script: **Avanzado → Ir a [proyecto] (no seguro) → Permitir**).
+7. Copia la URL que termina en `/exec`.
 
 ### 3. Conecta la página con el Sheet
 
@@ -57,4 +69,4 @@ No es seguridad real (la palabra queda visible en el código fuente de la págin
 
 - **No hay actualización en vivo entre personas** — la página revisa el Sheet cada 30 segundos y al cargar; usa el botón ⟳ para forzar una actualización.
 - **Concurrencia**: Apps Script no maneja bien cientos de escrituras simultáneas — para un equipo pequeño registrando manualmente no es un problema real.
-- Este README y el código fueron preparados sin una implementación real desplegada todavía — si algo falla en el primer intento (típicamente CORS o permisos), revisa que el paso 4.4 diga exactamente "Cualquier usuario" y no "Cualquier usuario con cuenta de Google".
+- Este README y el código fueron preparados sin una implementación real desplegada todavía — si algo falla en el primer intento (típicamente CORS o permisos), revisa que "Quién tiene acceso" diga exactamente "Cualquier usuario" y no "Cualquier usuario con cuenta de Google".
